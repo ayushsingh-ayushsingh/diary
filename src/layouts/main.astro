@@ -1,5 +1,7 @@
 ---
 import "@/styles/global.css"
+import { Font } from "astro:assets"
+import { ModeToggle } from "@/components/blocks/mode-toggle"
 ---
 
 <html lang="en">
@@ -7,9 +9,38 @@ import "@/styles/global.css"
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <Font cssVariable="--font-content" />
+    <Font cssVariable="--font-heading" />
     <title>Astro App</title>
   </head>
   <body>
     <slot />
+    <div class="fixed right-1 bottom-1">
+      <ModeToggle client:only="react" />
+    </div>
   </body>
 </html>
+
+<script is:inline>
+  const getThemePreference = () => {
+    if (typeof localStorage !== "undefined" && localStorage.getItem("theme")) {
+      return localStorage.getItem("theme")
+    }
+    return window.matchMedia("(prefers-color-scheme: dark)").matches
+      ? "dark"
+      : "light"
+  }
+  const isDark = getThemePreference() === "dark"
+  document.documentElement.classList[isDark ? "add" : "remove"]("dark")
+
+  if (typeof localStorage !== "undefined") {
+    const observer = new MutationObserver(() => {
+      const isDark = document.documentElement.classList.contains("dark")
+      localStorage.setItem("theme", isDark ? "dark" : "light")
+    })
+    observer.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ["class"],
+    })
+  }
+</script>
