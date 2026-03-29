@@ -13,6 +13,10 @@ h6 {
   font-weight: 200;
 }
 
+.heading {
+  font-family: var(--font-heading), serif;
+}
+
 * {
   scrollbar-width: thin;
   scrollbar-color: var(--border) var(--card);
@@ -122,7 +126,8 @@ html {
   --code: var(--color-white);
   --code-foreground: var(--foreground);
   --code-highlight: --alpha(var(--color-black) / 4%);
-  --radius: 0.625rem;
+  /* --radius: 0.625rem; */
+  --radius: 0.125rem;
   --sidebar: var(--color-neutral-50);
   --sidebar-accent: --alpha(var(--color-black) / 4%);
   --sidebar-accent-foreground: var(--color-neutral-800);

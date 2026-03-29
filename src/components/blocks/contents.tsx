@@ -37,7 +37,7 @@ export function TableOfContents({ text }: { text: string }) {
             <li key={i}>
               <a
                 href={`#${h.id}`}
-                className={`block truncate leading-relaxed no-underline transition-colors hover:text-foreground ${indent}`}
+                className={`block truncate leading-relaxed hover:underline underline-offset-2 decoration-0.25 no-underline transition-colors hover:text-foreground ${indent} decoration-chart-4`}
               >
                 {h.text}
               </a>

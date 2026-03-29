@@ -1,5 +1,5 @@
 ---
-import EditorPage from "@/components/blocks/editor"
+import { SignOut } from "@/components/auth"
 import Main from "@/layouts/main.astro"
 
 if (!Astro.locals.session) {
@@ -8,5 +8,5 @@ if (!Astro.locals.session) {
 ---
 
 <Main>
-  <EditorPage client:only="react" />
+  <SignOut client:only="react" />
 </Main>

@@ -1,0 +1,8 @@
+---
+import LoginPage from "@/components/auth"
+import Main from "@/layouts/main.astro"
+---
+
+<Main>
+  <LoginPage client:only="react" />
+</Main>

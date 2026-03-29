@@ -7,7 +7,7 @@ import {
 } from "react"
 import remarkGfm from "remark-gfm"
 import ReactMarkdown, { type ExtraProps } from "react-markdown"
-import rehypeRaw from "rehype-raw"
+import rehypeSanitize from "rehype-sanitize"
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter"
 import { oneDark } from "react-syntax-highlighter/dist/esm/styles/prism"
 import { debounce } from "lodash"
@@ -27,7 +27,7 @@ import { vscodeDark, vscodeLight } from "@uiw/codemirror-theme-vscode"
 import { languages } from "@codemirror/language-data"
 import { useCopyToClipboard } from "@/hooks/use-copy-to-clipboard"
 import { Button } from "@/components/ui/button"
-import { Check, Copy } from "lucide-react"
+import { Check, Copy, Send } from "lucide-react"
 
 type CodeProps = ComponentPropsWithoutRef<"code"> & ExtraProps
 type CenterProps = ComponentPropsWithoutRef<"div"> & ExtraProps
@@ -43,9 +43,9 @@ function CodeBlock({ children, className }: CodeProps) {
       <div className="relative -mx-4 -my-4.75">
         <Button
           onClick={() => copyToClipboard(code)}
-          variant={"outline"}
-          size={"icon-sm"}
-          className="absolute top-1 right-1 z-10 h-7 px-2 text-xs backdrop-blur-lg"
+          variant={"ghost"}
+          size={"icon-xs"}
+          className="absolute text-white border-white/20 bg-white/5 rounded-2xl top-1 right-1 z-10 h-7 px-2 text-xs backdrop-blur-lg"
         >
           {isCopied ? <Check className="text-success" /> : <Copy />}
         </Button>
@@ -84,8 +84,8 @@ export function Renderer({ text }: { text: string }) {
   return (
     <div className="mx-auto prose w-full max-w-4xl overflow-auto p-4 dark:prose-invert">
       <ReactMarkdown
-        rehypePlugins={[rehypeRaw]}
         remarkPlugins={[remarkGfm]}
+        rehypePlugins={[rehypeSanitize]}
         components={{
           code: CodeBlock,
           center: Center,
@@ -155,9 +155,10 @@ export default function EditorPage() {
 
   return (
     <div className="flex">
-      <div className="sticky top-0 h-screen w-1/2 overflow-auto rounded-none border-r">
+      <div className="sticky top-0 h-screen w-4/10 overflow-auto rounded-none border-r">
         <CodeMirror
           value={text}
+          placeholder={"# Hello, World! This is a *Markdown* editor..."}
           theme={
             theme === "dark" || theme === "system" ? vscodeDark : vscodeLight
           }
@@ -171,10 +172,18 @@ export default function EditorPage() {
           ]}
           onChange={onChange}
         />
+        <Button variant={"outline"} size={"icon"} className="fixed top-2 right-2">
+          <Send />
+        </Button>
       </div>
-      <div className="w-1/2">
+      <div className="w-6/10">
+        <div className="text-[156px] h-28 select-none heading text-primary/25 max-w-4xl mx-auto" aria-hidden>
+          &ldquo;
+        </div>
         <Renderer text={text} />
-        <TableOfContents text={text} />
+        <div className="py-24 max-w-4xl mx-auto">
+          <TableOfContents text={text} />
+        </div>
       </div>
     </div>
   )
