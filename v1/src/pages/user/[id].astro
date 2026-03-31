@@ -1,0 +1,114 @@
+---
+import Main from "@/layouts/main.astro"
+import { db } from "@/db"
+import { blog, author } from "@/db/schema"
+import { eq, and, desc } from "drizzle-orm"
+
+type BlogType = typeof blog.$inferSelect
+
+const { id } = Astro.params
+if (!id) return Astro.redirect("/404")
+
+const profileAuthor = await db.query.author.findFirst({
+  where: eq(author.userId, id),
+})
+
+if (!profileAuthor) return new Response("User not found", { status: 404 })
+
+const publicBlogs = await db.query.blog.findMany({
+  where: and(
+    eq(blog.authorId, profileAuthor.id),
+    eq(blog.visibility, "public"),
+    eq(blog.isAnonymous, false)
+  ),
+  orderBy: [desc(blog.createdAt)],
+})
+
+const pinnedBlogs = publicBlogs.filter((b: BlogType) => b.isPinned).slice(0, 3)
+const recentBlogs = publicBlogs.filter((b: BlogType) => !b.isPinned)
+---
+
+<Main title={profileAuthor.displayName || "Author Profile"}>
+  <div class="mx-auto max-w-4xl px-4 py-12">
+    <div class="mb-12 flex items-center gap-6">
+      {
+        profileAuthor.avatar ? (
+          <img
+            src={profileAuthor.avatar}
+            alt="Avatar"
+            class="h-24 w-24 rounded-full border object-cover shadow-sm"
+          />
+        ) : (
+          <div class="flex h-24 w-24 items-center justify-center rounded-full bg-primary/10 text-3xl font-bold text-primary">
+            {(profileAuthor.displayName || "A")[0].toUpperCase()}
+          </div>
+        )
+      }
+      <div>
+        <h1 class="text-4xl font-bold">
+          {profileAuthor.displayName || "Unknown User"}
+        </h1>
+        <p class="mt-2 text-muted-foreground">
+          Joined {new Date(profileAuthor.createdAt).toLocaleDateString()}
+        </p>
+      </div>
+    </div>
+
+    {
+      pinnedBlogs.length > 0 && (
+        <div class="mb-12">
+          <h2 class="mb-6 flex items-center text-2xl font-semibold">
+            <span class="mr-2">📌</span> Pinned Blogs
+          </h2>
+          <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+            {pinnedBlogs.map((b: BlogType) => (
+              <a
+                href={`/${b.slug}`}
+                class="block rounded-lg border-2 border-primary/20 bg-card p-6 shadow-sm transition-colors hover:border-primary/40 hover:bg-accent/50"
+              >
+                <h3 class="mb-2 text-xl leading-tight font-bold">{b.title}</h3>
+                <p class="text-sm text-muted-foreground">
+                  {new Date(b.createdAt).toLocaleDateString()}
+                </p>
+              </a>
+            ))}
+          </div>
+        </div>
+      )
+    }
+
+    <div>
+      <h2 class="mb-6 text-2xl font-semibold">
+        Recent Blogs ({recentBlogs.length})
+      </h2>
+      <div class="grid gap-6">
+        {
+          recentBlogs.map((b: BlogType) => (
+            <a
+              href={`/${b.slug}`}
+              class="block rounded-lg border bg-card p-6 shadow-sm transition-colors hover:bg-accent/50"
+            >
+              <h3 class="mb-2 text-2xl font-bold">{b.title}</h3>
+              <div class="flex items-center gap-4 text-sm text-muted-foreground">
+                <span>{new Date(b.createdAt).toLocaleDateString()}</span>
+                {b.readingTime && (
+                  <>
+                    <span>•</span>
+                    <span>{b.readingTime}</span>
+                  </>
+                )}
+              </div>
+            </a>
+          ))
+        }
+        {
+          recentBlogs.length === 0 && (
+            <p class="py-12 text-center text-muted-foreground">
+              No recent blogs found.
+            </p>
+          )
+        }
+      </div>
+    </div>
+  </div>
+</Main>

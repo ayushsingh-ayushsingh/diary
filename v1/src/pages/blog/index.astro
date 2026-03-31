@@ -1,0 +1,26 @@
+---
+import Main from "@/layouts/main.astro"
+import { compile } from "@mdx-js/mdx"
+import * as runtime from "react/jsx-runtime"
+import { components } from "@/components/mdx-components"
+
+const response = await fetch(
+  "https://gist.githubusercontent.com/allysonsilva/85fff14a22bbdf55485be947566cc09e/raw/fa8048a906ebed3c445d08b20c9173afd1b4a1e5/Full-Markdown.md"
+)
+
+const markdown = await response.text()
+
+const compiled = await compile(markdown, {
+  outputFormat: "function-body",
+  development: false, // Ensure this is false for production builds
+})
+
+// Correct way to hydrate the function body
+const { default: Content } = await new Function(String(compiled))({
+  ...runtime,
+})
+---
+
+<Main>
+  <Content components={components} />
+</Main>

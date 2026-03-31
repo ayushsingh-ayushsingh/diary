@@ -1,0 +1,12 @@
+---
+import { SignOut } from "@/components/auth"
+import Main from "@/layouts/main.astro"
+
+if (!Astro.locals.session) {
+  return Astro.redirect("/auth")
+}
+---
+
+<Main>
+  <SignOut client:only="react" />
+</Main>

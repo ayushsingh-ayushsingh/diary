@@ -1,0 +1,54 @@
+---
+import Main from "@/layouts/main.astro"
+import { Input } from "@/components/ui/input"
+import { Button } from "@/components/ui/button"
+
+const q = Astro.url.searchParams.get("q") || ""
+let results: any[] = []
+
+if (q) {
+  const res = await fetch(Astro.url.origin + `/api/blog/search?q=${encodeURIComponent(q)}`)
+  if (res.ok) {
+    results = await res.json()
+  }
+}
+---
+
+<Main title="Search Blogs">
+  <div class="mx-auto max-w-4xl py-12 px-4">
+    <h1 class="mb-8 text-4xl font-bold">Search</h1>
+    <form method="GET" action="/search" class="mb-12 flex gap-2">
+      <Input 
+        name="q" 
+        value={q} 
+        placeholder="Search across all public blogs..." 
+        className="max-w-md" 
+      />
+      <Button type="submit">Search</Button>
+    </form>
+    
+    <div class="grid gap-6">
+      {results.map((b) => (
+        <a href={`/${b.slug}`} class="block shadow-sm transition-colors hover:bg-accent/50 rounded-lg border bg-card p-6">
+          <h2 class="mb-2 text-2xl font-semibold">{b.title}</h2>
+          <div class="flex items-center space-x-4 text-sm text-muted-foreground">
+            <span>By {b.authorName}</span>
+            <span>•</span>
+            <span>{new Date(b.created_at).toLocaleDateString()}</span>
+            {b.reading_time && (
+              <>
+                <span>•</span>
+                <span>{b.reading_time}</span>
+              </>
+            )}
+          </div>
+        </a>
+      ))}
+      {q && results.length === 0 && (
+        <div class="py-12 text-center text-muted-foreground">
+          No blogs found matching "{q}". Try a different search term.
+        </div>
+      )}
+    </div>
+  </div>
+</Main>

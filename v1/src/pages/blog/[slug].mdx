@@ -1,0 +1,57 @@
+import { Renderer } from "@/components/blocks/reader"
+import CommentSection from "@/components/blocks/comment-section"
+import { TableOfContents } from "@/components/blocks/contents"
+import { ScrollArea } from "@/components/ui/scroll-area"
+import Main from "@/layouts/main.astro"
+
+const { slug } = Astro.params
+
+const blogPost = Astro.props.blogPost
+const isBlogAuthor = Astro.props.isBlogAuthor
+
+<Main title={blogPost.title}>
+  <div class="flex">
+    <div class="sticky top-0 hidden h-screen w-xs items-center truncate overflow-auto sm:block"></div>
+    <div class="mx-auto w-full max-w-4xl">
+      
+      <div class="mb-8 mt-12 px-4">
+        <h1 class="mb-6 text-5xl font-extrabold tracking-tight">{blogPost.title}</h1>
+        <div class="flex items-center text-muted-foreground">
+          {blogPost.author.isPublic && !blogPost.isAnonymous ? (
+            <a href={`/user/${blogPost.author.userId}`} target="_blank" class="mr-4 flex cursor-pointer items-center transition-colors hover:text-primary">
+              {blogPost.author.avatar ? (
+                <img src={blogPost.author.avatar} alt="Author" class="mr-3 h-8 w-8 rounded-full object-cover" />
+              ) : (
+                <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                  {(blogPost.author.displayName || "A")[0].toUpperCase()}
+                </div>
+              )}
+              <span class="font-medium">{blogPost.author.displayName || "Unknown Author"}</span>
+            </a>
+          ) : (
+             <div class="mr-4 flex items-center">
+               <div class="mr-3 flex h-8 w-8 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">A</div>
+               <span class="font-medium">Anonymous</span>
+             </div>
+          )}
+          <span>•</span>
+          <span class="ml-4 mr-4">{new Date(blogPost.createdAt).toLocaleDateString()}</span>
+          {blogPost.readingTime && (
+            <>
+              <span>•</span>
+              <span class="ml-4">{blogPost.readingTime}</span>
+            </>
+          )}
+        </div>
+      </div>
+
+      <Renderer text={blogPost.content} client:load />
+      <CommentSection blogId={blogPost.id} isBlogAuthor={isBlogAuthor} client:only="react" />
+    </div>
+    <div class="sticky top-0 flex h-screen w-xs items-center opacity-80 transition-all duration-200 hover:opacity-100">
+      <ScrollArea scrollFade className="h-[80vh] truncate rounded-md px-4" client:idle>
+        <TableOfContents text={blogPost.content} client:idle />
+      </ScrollArea>
+    </div>
+  </div>
+</Main>
